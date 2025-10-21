@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'sign_up_screen.dart'; // Import ObsTwo
 
 class ObsTwo extends StatelessWidget {
   const ObsTwo({super.key});
@@ -44,24 +45,24 @@ class ObsTwo extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
                 // Single centered image
-                Container(
-                  height: 280,
+                SizedBox(
+                  height: 180,
+                  width: double.infinity,
                   child: Center(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
-                        'assets/images/obstwo.png', // Replace with your desired image path
-                        width: 240,
-                        height: 260,
-                        fit: BoxFit.cover,
+                        'assets/images/obstwo.png',
+                        width: 280,
+                        height: 160,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          // Fallback to a simple container with icon if image fails to load
                           return Container(
-                            width: 240,
-                            height: 260,
+                            width: 280,
+                            height: 160,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(16),
@@ -70,7 +71,7 @@ class ObsTwo extends StatelessWidget {
                               child: Icon(
                                 Icons.photo_outlined,
                                 color: Colors.white.withOpacity(0.8),
-                                size: 60,
+                                size: 50,
                               ),
                             ),
                           );
@@ -80,7 +81,7 @@ class ObsTwo extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
 
                 // Main heading text
                 Text(
@@ -97,27 +98,31 @@ class ObsTwo extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Description text
-                Text(
-                  'From weddings to corporate events, we deliver\nprofessional results every time',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    height: 1.4,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'From weddings to corporate events, we deliver\nprofessional results every time',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
 
                 // Feature cards
                 _buildFeatureCard(
                   icon: Icons.calendar_today_outlined,
                   title: 'Easy Booking',
-                  subtitle: 'Schedule your sessions with just a few taps',
+                  subtitle:
+                      'Schedule your sessions easily with just a few taps',
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 _buildFeatureCard(
                   icon: Icons.groups_outlined,
@@ -125,7 +130,7 @@ class ObsTwo extends StatelessWidget {
                   subtitle: 'Professional photographers and videographers',
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 _buildFeatureCard(
                   icon: Icons.verified_outlined,
@@ -164,11 +169,16 @@ class ObsTwo extends StatelessWidget {
                 // Get Started button
                 Container(
                   width: double.infinity,
-                  height: 56,
+                  height: 52,
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle get started action
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignUpScreen(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -189,7 +199,7 @@ class ObsTwo extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -203,62 +213,53 @@ class ObsTwo extends StatelessWidget {
     required String title,
     required String subtitle,
   }) {
-    return Builder(
-      builder: (context) {
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width * 0.12,
-                height: MediaQuery.of(context).size.width * 0.12,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: MediaQuery.of(context).size.width * 0.06,
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-              SizedBox(width: MediaQuery.of(context).size.width * 0.04),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: MediaQuery.of(context).size.width * 0.04,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.005,
-                    ),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: MediaQuery.of(context).size.width * 0.035,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

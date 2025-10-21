@@ -1,4 +1,4 @@
-name: my_app
+name: Captura
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -32,8 +32,16 @@ dependencies:
   flutter:
     sdk: flutter
   device_preview: ^1.2.0  # Latest as of 2025
-  google_fonts: 6.1.0  # Latest as of 2025
+  google_fonts: ^6.3.2  # Latest as of 2025
   http: ^1.1.0          # Latest as of 2025
+  material_symbols_icons: ^4.2707.0 # Latest as of 2025
+  
+  url_launcher: ^6.2.0
+  path: ^1.9.1         # Latest as of 2025
+  shared_preferences: ^2.5.3 # Latest as of 2025
+  crypto: ^3.0.6     # Latest as of 2025
+  localstorage: ^4.0.1+4
+  
 
    
 
