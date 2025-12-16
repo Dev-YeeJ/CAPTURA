@@ -8,6 +8,7 @@ class PackageCardFull extends StatelessWidget {
   final String description;
   final List<String> features;
   final bool isPopular;
+  final VoidCallback? onBookPressed;
 
   const PackageCardFull({
     Key? key,
@@ -16,6 +17,7 @@ class PackageCardFull extends StatelessWidget {
     required this.description,
     required this.features,
     required this.isPopular,
+    this.onBookPressed,
   }) : super(key: key);
 
   @override
@@ -111,7 +113,7 @@ class PackageCardFull extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onBookPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1A4D9C),
                 foregroundColor: Colors.white,

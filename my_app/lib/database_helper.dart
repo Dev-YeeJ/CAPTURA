@@ -364,4 +364,78 @@ class DatabaseHelper {
   Future<void> close() async {
     // Nothing to close for SharedPreferences
   }
+  // --- UPDATED BOOKING FEATURES ---
+
+  Future<List<Map<String, dynamic>>> _getBookings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bookingsJson = prefs.getString('bookings') ?? '[]';
+    final List<dynamic> bookingsList = json.decode(bookingsJson);
+    return bookingsList.map((e) => Map<String, dynamic>.from(e)).toList();
+  }
+
+  Future<void> _saveBookings(List<Map<String, dynamic>> bookings) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('bookings', json.encode(bookings));
+  }
+
+  // 1. New Feature: Check Availability
+  Future<bool> isSlotAvailable(String date, String time) async {
+    final bookings = await _getBookings();
+    // Check if any existing booking has the same date AND time
+    // (In a real app, you might check for overlapping duration)
+    bool isTaken = bookings.any(
+      (b) =>
+          b['date'] == date && b['time'] == time && b['status'] != 'Cancelled',
+    );
+    return !isTaken;
+  }
+
+  // 2. Updated Create Booking (Accepts more data)
+  Future<Map<String, dynamic>> createBooking({
+    required int userId,
+    required String packageTitle,
+    required String price,
+    required String date,
+    required String time, // Added
+    required String location, // Added
+    required String notes, // Added
+  }) async {
+    await database;
+
+    // Safety check for availability again
+    if (!await isSlotAvailable(date, time)) {
+      return {'success': false, 'message': 'Slot already taken'};
+    }
+
+    try {
+      final bookings = await _getBookings();
+
+      final newBooking = {
+        'id': bookings.length + 1,
+        'user_id': userId,
+        'package_title': packageTitle,
+        'price': price,
+        'date': date,
+        'time': time, // Store time
+        'location': location, // Store location
+        'notes': notes, // Store notes
+        'status': 'Pending',
+        'created_at': DateTime.now().toIso8601String(),
+      };
+
+      bookings.add(newBooking);
+      await _saveBookings(bookings);
+      return {'success': true, 'message': 'Booking confirmed!'};
+    } catch (e) {
+      print('Error creating booking: $e');
+      return {'success': false, 'message': 'Database error: $e'};
+    }
+  }
+
+  // Get bookings for a specific user
+  Future<List<Map<String, dynamic>>> getUserBookings(int userId) async {
+    await database;
+    final allBookings = await _getBookings();
+    return allBookings.where((b) => b['user_id'] == userId).toList();
+  }
 }

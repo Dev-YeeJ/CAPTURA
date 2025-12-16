@@ -5,6 +5,8 @@ import 'sign_in_screen.dart';
 import 'auth_service.dart';
 import 'database_helper.dart';
 
+// --- HELPER CLASSES (Ideally move these to separate files) ---
+
 class WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -21,6 +23,28 @@ class WavePainter extends CustomPainter {
     path.quadraticBezierTo(size.width * 0.75, 60, size.width, 30);
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class TrianglePainter extends CustomPainter {
+  final Color color;
+
+  TrianglePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = Path();
+
+    path.moveTo(0, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width / 2, size.height);
     path.close();
 
     canvas.drawPath(path, paint);
@@ -252,27 +276,7 @@ class _FloatingValidatorFieldState extends State<FloatingValidatorField> {
   }
 }
 
-class TrianglePainter extends CustomPainter {
-  final Color color;
-
-  TrianglePainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    final path = Path();
-
-    path.moveTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width / 2, size.height);
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
+// --- MAIN SCREEN ---
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -451,7 +455,6 @@ class _SignUpScreenState extends State<SignUpScreen>
         password: _passwordController.text,
       );
 
-      // Print database contents to console
       await DatabaseHelper.instance.debugPrintDatabase();
 
       if (!mounted) return;
@@ -547,11 +550,17 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Determine the height of the keyboard
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
+      // 1. Disable resize so the background stays put
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(color: Colors.white),
         child: Stack(
           children: [
+            // Background Wave - Fixed
             Positioned(
               bottom: 0,
               left: 0,
@@ -565,66 +574,69 @@ class _SignUpScreenState extends State<SignUpScreen>
               ),
             ),
             SafeArea(
+              // 2. Add padding to the scroll view equal to keyboard height
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 30),
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: Image.asset(
-                          'assets/images/captura.png',
+                padding: EdgeInsets.only(bottom: keyboardHeight),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
                           width: 80,
                           height: 80,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A4D9C),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.camera_alt_outlined,
-                                  color: Colors.white,
-                                  size: 35,
+                          child: Image.asset(
+                            'assets/images/captura.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A4D9C),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ),
-                            );
-                          },
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.camera_alt_outlined,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        height: 100,
-                        child: Image.asset(
-                          'assets/images/capturatextblue.png',
-                          height: 25,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Text(
-                              'CAPTURA',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF2D3748),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
-                              ),
-                            );
-                          },
+                      const SizedBox(height: 12),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
+                          height: 100,
+                          child: Image.asset(
+                            'assets/images/capturatextblue.png',
+                            height: 25,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Text(
+                                'CAPTURA',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF2D3748),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.5,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: SlideTransition(
+                      SlideTransition(
                         position: _slideAnimation,
                         child: FadeTransition(
                           opacity: _fadeAnimation,
@@ -876,7 +888,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       ),
                                     ),
                                   ),
-                                  const Spacer(),
+                                  // 3. MOVED LINK INSIDE HERE
+                                  const SizedBox(height: 16),
                                   Center(
                                     child: GestureDetector(
                                       onTap: _navigateToSignIn,
@@ -919,8 +932,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
             ),

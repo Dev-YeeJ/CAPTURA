@@ -6,7 +6,7 @@ import 'auth_service.dart'; // Import AuthService
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService.instance.initialize();
-  runApp(DevicePreview(enabled: true, builder: (context) => const MyApp()));
+  runApp(DevicePreview(enabled: false, builder: (context) => const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       useInheritedMediaQuery: true,
+      debugShowCheckedModeBanner: false,
       builder: DevicePreview.appBuilder,
       home: const SplashScreenFirst(), // This will now use the imported class
     );

@@ -1,8 +1,8 @@
-// screens/profile_tab.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../auth_service.dart';
+import '../database_helper.dart'; // Make sure this import is here
 import '../sign_in_screen.dart';
 
 class ProfileTab extends StatefulWidget {
@@ -18,10 +18,48 @@ class _ProfileTabState extends State<ProfileTab> {
   bool _pushNotifications = false;
   bool _smsNotifications = true;
 
+  // New variables for booking data
+  List<Map<String, dynamic>> _myBookings = [];
+  bool _isLoading = true;
+  double _totalSpent = 0;
+
   @override
   void initState() {
     super.initState();
     user = AuthService.instance.currentUser;
+    // Load bookings when the screen initializes
+    _loadBookings();
+  }
+
+  // Fetch bookings from Database
+  Future<void> _loadBookings() async {
+    if (user == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    final bookings = await DatabaseHelper.instance.getUserBookings(
+      user!['user_id'],
+    );
+
+    // Calculate total spent
+    double total = 0;
+    for (var booking in bookings) {
+      // Clean up price string (remove '₱' and commas) to parse as double
+      String priceClean = booking['price']
+          .toString()
+          .replaceAll(',', '')
+          .replaceAll('₱', '');
+      total += double.tryParse(priceClean) ?? 0;
+    }
+
+    if (mounted) {
+      setState(() {
+        _myBookings = bookings;
+        _totalSpent = total;
+        _isLoading = false;
+      });
+    }
   }
 
   void _handleLogout(BuildContext context) {
@@ -177,7 +215,7 @@ class _ProfileTabState extends State<ProfileTab> {
               ),
             ),
 
-            // Account Overview
+            // Account Overview (Updated with real data)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -197,7 +235,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   Expanded(
                     child: _buildStatCard(
                       icon: Icons.calendar_today,
-                      value: '0',
+                      value: _myBookings.length.toString(), // Real data
                       label: 'Total Bookings',
                     ),
                   ),
@@ -205,7 +243,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   Expanded(
                     child: _buildStatCard(
                       icon: Icons.wallet,
-                      value: '₱0',
+                      value: '₱${_totalSpent.toStringAsFixed(0)}', // Real data
                       label: 'Total Spent',
                     ),
                   ),
@@ -279,7 +317,7 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             const SizedBox(height: 24),
 
-            // My Bookings
+            // My Bookings Section (Dynamic List)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
@@ -298,53 +336,130 @@ class _ProfileTabState extends State<ProfileTab> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'My Bookings (0)',
+                    'My Bookings (${_myBookings.length})',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF2D3748),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Icon(
-                    Icons.calendar_today,
-                    size: 48,
-                    color: const Color(0xFF2563EB).withOpacity(0.3),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No Bookings Yet',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2D3748),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Ready to capture your moments?',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
                   const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.explore),
-                    label: const Text('Browse Packages'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A4D9C),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+
+                  // Dynamic Content Switcher
+                  if (_isLoading)
+                    const Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (_myBookings.isEmpty)
+                    Column(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 48,
+                          color: const Color(0xFF2563EB).withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No Bookings Yet',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF2D3748),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Ready to capture your moments?',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            // You might want to switch tabs here using a callback
+                            // For now, just a placeholder
+                          },
+                          icon: const Icon(Icons.explore),
+                          label: const Text('Browse Packages'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A4D9C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    // Show List of Bookings
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _myBookings.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final booking = _myBookings[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A4D9C).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.confirmation_number_outlined,
+                              color: Color(0xFF1A4D9C),
+                            ),
+                          ),
+                          title: Text(
+                            booking['package_title'] ?? 'Package',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: const Color(0xFF2D3748),
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Date: ${booking['date']}',
+                            style: GoogleFonts.inter(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '₱${booking['price']}',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF1A4D9C),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                booking['status'] ?? 'Pending',
+                                style: GoogleFonts.inter(
+                                  color: Colors.orange,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ),
                 ],
               ),
             ),
